@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Api Form (DID 1)</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      z-index: 1000;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .dropdown-item {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item.highlighted {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <form id="apiForm">
+      <h1>Api Form (DID 1)</h1>
+      <div class="row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" placeholder="First Name" required />
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" placeholder="Last Name" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="phone">Phone <span id="example-phone">(e.g., 1234567890)</span></label>
+          <input type="tel" id="phone" placeholder="Phone" required />
+        </div>
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" placeholder="New York City" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Email" required />
+        </div>
+        <div class="form-group">
+          <label for="zipcode">Zipcode</label>
+          <input type="text" id="zipcode" placeholder="5 digit zipcode" required />
+        </div>
+        <div class="form-group" style="position: relative;">
+          <label for="stateInput">State</label>
+          <input type="text" id="stateInput" class="state" placeholder="Choose State" autocomplete="off" />
+          <div id="stateDropdown" class="dropdown" style="display: none;"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group full-width">
+          <label for="address">Address</label>
+          <input type="text" id="address" placeholder="st. no. 1" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group full-width">
+          <label for="address2">Address 2</label>
+          <input type="text" id="address2" placeholder="optional" />
+        </div>
+      </div>
+
+      <div class="row">
+        <button type="submit" class="submit-btn">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("apiForm");
+    const phoneInput = document.getElementById("phone");
+    const stateInput = document.getElementById("stateInput");
+    const stateDropdown = document.getElementById("stateDropdown");
+
+    const states = [
+      "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+      "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+      "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+      "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+      "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+      "New Hampshire", "New Jersey", "New Mexico", "New York",
+      "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+      "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+      "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+      "West Virginia", "Wisconsin", "Wyoming"
+    ];
+
+    stateInput.addEventListener("focus", () => showStateDropdown(states));
+    stateInput.addEventListener("click", () => showStateDropdown(states));
+
+    stateInput.addEventListener("input", () => {
+      const searchTerm = stateInput.value.toLowerCase().trim();
+      const filtered = states.filter(state =>
+        state.toLowerCase().includes(searchTerm)
+      );
+      showStateDropdown(filtered);
+    });
+
+    function showStateDropdown(matches) {
+      stateDropdown.innerHTML = "";
+      if (matches.length === 0) {
+        const noResult = document.createElement("div");
+        noResult.textContent = "No matches found";
+        noResult.className = "dropdown-item";
+        stateDropdown.appendChild(noResult);
+      } else {
+        matches.forEach(state => {
+          const item = document.createElement("div");
+          item.textContent = state;
+          item.className = "dropdown-item";
+          item.addEventListener("click", () => {
+            stateInput.value = state;
+            stateDropdown.style.display = "none";
+          });
+          stateDropdown.appendChild(item);
+        });
+      }
+      stateDropdown.style.display = "block";
+    }
+
+    // Hide dropdown on outside click
+    document.addEventListener("click", (e) => {
+      if (!stateInput.contains(e.target) && !stateDropdown.contains(e.target)) {
+        stateDropdown.style.display = "none";
+      }
+    });
+
+    // Keyboard navigation
+    stateInput.addEventListener("keydown", (e) => {
+      const items = stateDropdown.querySelectorAll(".dropdown-item");
+      let currentIndex = Array.from(items).findIndex(item =>
+        item.classList.contains("highlighted")
+      );
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (currentIndex > -1) items[currentIndex].classList.remove("highlighted");
+        currentIndex = (currentIndex + 1) % items.length;
+        items[currentIndex].classList.add("highlighted");
+        items[currentIndex].scrollIntoView({ block: "nearest" });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (currentIndex > -1) items[currentIndex].classList.remove("highlighted");
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        items[currentIndex].classList.add("highlighted");
+        items[currentIndex].scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (currentIndex > -1) {
+          stateInput.value = items[currentIndex].textContent;
+          stateDropdown.style.display = "none";
+        }
+      }
+    });
+
+    phoneInput.addEventListener("input", () => {
+      phoneInput.value = phoneInput.value.replace(/\D/g, "");
+    });
+
+    function validateInput(input) {
+      const errorMessage = document.createElement("span");
+      errorMessage.style.color = "red";
+      errorMessage.style.fontSize = "0.8rem";
+      errorMessage.style.display = "block";
+      input.nextElementSibling?.remove();
+
+      if (input.id === "firstName" || input.id === "lastName") {
+        if (!/^[a-zA-Z]+$/.test(input.value)) {
+          errorMessage.textContent = "Only English alphabets are allowed.";
+          input.insertAdjacentElement("afterend", errorMessage);
+          return false;
+        }
+      } else if (input.id === "phone") {
+        const rawDigits = input.value.replace(/[^\d]/g, "");
+        if (rawDigits.length !== 10) {
+          errorMessage.textContent = "Enter a valid 10-digit USA phone number.";
+          input.insertAdjacentElement("afterend", errorMessage);
+          return false;
+        } else {
+          const formattedPhone = `(${rawDigits.slice(0, 3)}) ${rawDigits.slice(3, 6)}-${rawDigits.slice(6)}`;
+          input.value = formattedPhone;
+        }
+      } else if (input.id === "city") {
+        if (!/^[a-zA-Z\s]+$/.test(input.value)) {
+          errorMessage.textContent = "Enter a valid city name.";
+          input.insertAdjacentElement("afterend", errorMessage);
+          return false;
+        }
+      } else if (input.id === "email") {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
+          errorMessage.textContent = "Enter a valid email address.";
+          input.insertAdjacentElement("afterend", errorMessage);
+          return false;
+        }
+      } else if (input.id === "zipcode") {
+        if (!/^\d{5}$/.test(input.value)) {
+          errorMessage.textContent = "Zipcode must be exactly 5 digits.";
+          input.insertAdjacentElement("afterend", errorMessage);
+          return false;
+        }
+      } else if (input.id === "address") {
+        if (input.value.length >= 50) {
+          errorMessage.textContent = "Address must be less than 50 characters.";
+          input.insertAdjacentElement("afterend", errorMessage);
+          return false;
+        }
+      }
+      input.style.border = "1px solid #ccc";
+      return true;
+    }
+
+    const inputs = form.querySelectorAll("input");
+    inputs.forEach((input) => {
+      if (input.id !== "stateInput") {
+        input.addEventListener("blur", () => validateInput(input));
+        input.addEventListener("input", () => validateInput(input));
+      }
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const rawDigits = phoneInput.value.replace(/\D/g, "");
+      if (rawDigits.length !== 10) {
+        alert("Please enter a valid 10-digit phone number.");
+        phoneInput.focus();
+        return;
+      }
+
+      const formattedPhone = `(${rawDigits.slice(0, 3)}) ${rawDigits.slice(3, 6)}-${rawDigits.slice(6)}`;
+      phoneInput.value = formattedPhone;
+
+      let isValid = true;
+      inputs.forEach((input) => {
+        if (input.id !== "stateInput" && !validateInput(input)) {
+          isValid = false;
+        }
+      });
+
+      if (!isValid) {
+        alert("Please correct the highlighted errors before submitting.");
+        return;
+      }
+
+      const data = {
+        phone_number: phoneInput.value,
+        first_name: document.getElementById("firstName").value,
+        last_name: document.getElementById("lastName").value,
+        city: document.getElementById("city").value,
+        email: document.getElementById("email").value,
+        postal_code: document.getElementById("zipcode").value,
+        State: document.getElementById("stateInput").value,
+        address1: document.getElementById("address").value,
+        address2: document.getElementById("address2").value,
+      };
+
+      const baseUrl = "https://callin.dialerzone.com/config/non_agent_api.php";
+      const defaultParams = {
+        source: "vendorleads",
+        function: "add_lead",
+        user: "API_LEAD",
+        pass: "Hak0matata",
+        custom_fields: "Y",
+        list_id: "786786",
+        vendor_lead_code: "",
+        source_id: "",
+        phone_code: "",
+        title: "",
+        country_code: "",
+      };
+
+      const allParams = { ...defaultParams, ...data };
+      const url = `${baseUrl}?${new URLSearchParams(allParams).toString()}`;
+
+      console.log("Sending request to:", url);
+
+      fetch(url)
+        .then((response) => response.text())
+        .then((result) => {
+          alert("Lead submitted successfully!");
+          console.log("Response:", result);
+          form.reset();
+          stateDropdown.innerHTML = "";
+        })
+        .catch((error) => {
+          alert("Error submitting lead.");
+          console.error("Error:", error);
+        });
+    });
+  </script>
+</body>
+</html>
